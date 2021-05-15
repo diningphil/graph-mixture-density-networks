@@ -5,8 +5,8 @@
 The Graph Mixture Density network is a supervised learning algorithm to model multimodal output distributions that are conditioned on arbitrary graphs.
 
 The library includes data and scripts to reproduce the experiments reported in the paper. If you happen to use or modify this code, please remember to cite us:
-[*Federico Errica , Davide Bacciu, Alessio Micheli: Graph Mixture Density Networks. Proceedings of the 38th International Conference on Machine Learning (ICML), PMLR 139, 2021.*
-](https://arxiv.org/abs/2012.03085)
+
+[*Federico Errica , Davide Bacciu, Alessio Micheli: Graph Mixture Density Networks. Proceedings of the 38th International Conference on Machine Learning (ICML), PMLR 139, 2021.*](https://arxiv.org/abs/2012.03085)
 
 ## Data and Splits
 To keep the memory footprint low, we do not provide the raw results of the simulations. We instead release the processed dataset, which contains the all the information used to run the simulations and the final results (target labels). However, through the notebooks in `GMDN_NOTEBOOKS`, it is possible to perform random simulations of the stochastic SIR model to create datasets of varying dimensions. This repo also provides Pytorch Geometric classes for all datasets
@@ -15,7 +15,7 @@ so that a user can easily load the data in memory and then convert it in some ot
 The splits used in our experiments are available in the `GMDN_SPLITS` folder. These are simple dictionaries that can be loaded using Pytorch.
 
 Data for the Barabasi-Albert and Erdos-Renyi experiments can be downloaded at the following link: https://www.dropbox.com/sh/cv6blu0w3pqevxq/AAAJFC2wpLuDVfe75qAoD7hga?dl=0
-However, it will made more accessible in the future.
+However, we are working to provide a more reliable link in the future.
 The file contains the datasets in highly compressed form, for a total of 3.7GB. Note: the fully uncompressed folder (all datasets) will take 155GB of space.
 
 ## Installation:
