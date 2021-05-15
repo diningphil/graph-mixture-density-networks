@@ -14,8 +14,7 @@ so that a user can easily load the data in memory and then convert it in some ot
 
 The splits used in our experiments are available in the `GMDN_SPLITS` folder. These are simple dictionaries that can be loaded using Pytorch.
 
-Data for the Barabasi-Albert and Erdos-Renyi experiments can be downloaded at the following link: https://www.dropbox.com/sh/cv6blu0w3pqevxq/AAAJFC2wpLuDVfe75qAoD7hga?dl=0
-However, we are working to provide a more reliable link in the future.
+Data for the Barabasi-Albert and Erdos-Renyi experiments can be downloaded at [this link](https://www.dropbox.com/sh/cv6blu0w3pqevxq/AAAJFC2wpLuDVfe75qAoD7hga?dl=0). However, we are working to provide a more reliable link in the future.
 The file contains the datasets in highly compressed form, for a total of 3.7GB. Note: the fully uncompressed folder (all datasets) will take 155GB of space.
 
 ## Installation:
@@ -35,6 +34,7 @@ This repo is based on [PyDGN](https://github.com/diningphil/PyDGN) v0.4.0. That 
 
 ### Preprocess your dataset
 Use
+
     python build_dataset.py --config-file [your data config file]
 
 For example
@@ -43,6 +43,7 @@ For example
 
 ### Launch an experiment in debug mode
 Use
+      
     python launch_experiment.py --config-file [your exp. config file] --splits-folder [the splits MAIN folder] --data-splits [the splits file] --data-root [root folder of your data] --dataset-name [name of the dataset] --dataset-class [class that handles the dataset] --max-cpus [max cpu parallelism] --max-gpus [max gpu parallelism] --gpus-per-task [how many gpus to allocate for each job] --final-training-runs [how many final runs when evaluating on test. Results are averaged] --result-folder [folder where to store results]
 
 For example (uses GPU - to use CPU only, modify the config file accordingly and set `--max-gpus 0`)
