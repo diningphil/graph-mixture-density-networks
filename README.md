@@ -14,7 +14,7 @@ so that a user can easily load the data in memory and then convert it in some ot
 
 The splits used in our experiments are available in the `GMDN_SPLITS` folder. These are simple dictionaries that can be loaded using Pytorch.
 
-Data can be downloaded at the following link: https://www.dropbox.com/sh/cv6blu0w3pqevxq/AAAJFC2wpLuDVfe75qAoD7hga?dl=0
+Data for the Barabasi-Albert and Erdos-Renyi experiments can be downloaded at the following link: https://www.dropbox.com/sh/cv6blu0w3pqevxq/AAAJFC2wpLuDVfe75qAoD7hga?dl=0
 However, it will made more accessible in the future.
 The file contains the datasets in highly compressed form, for a total of 3.7GB. Note: the fully uncompressed folder (all datasets) will take 155GB of space.
 
