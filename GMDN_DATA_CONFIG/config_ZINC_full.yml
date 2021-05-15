@@ -1,0 +1,19 @@
+splitter:
+  root: GMDN_SPLITS/
+  class_name: data.splitter.Splitter
+  args:
+    n_outer_folds: 1
+    n_inner_folds: 1
+    seed: 42
+    stratify: False
+    shuffle: True
+    val_ratio: 0.1
+    test_ratio: 0.1
+    seed: 42
+dataset:
+  root: DATA/
+  class_name: data.dataset.TUDatasetInterface
+  args:
+    root: DATA
+    name: ZINC_full
+    use_node_attr: False

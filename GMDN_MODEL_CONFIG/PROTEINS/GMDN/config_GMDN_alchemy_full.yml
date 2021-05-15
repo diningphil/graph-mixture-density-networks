@@ -1,0 +1,74 @@
+model: model.dgn.gmdn.GMDN
+experiment: experiment.supervised_task.SupervisedTask
+log_every: 5
+higher_results_are_better: True
+dataset-getter: data.provider.DataProvider
+device: cuda
+num_dataloader_workers: 4
+pin_memory: True
+grid:
+  supervised_config:
+    batch_size:
+      - 8192
+    shuffle:
+      - True
+    number_of_experts:
+      - 5
+      - 3
+      - 2
+    hidden_units:
+      - 64
+      - 256
+    num_convolutional_layers:
+      - 2
+      - 5
+      - 7
+    dirichlet_alpha:
+      - 1.0
+      - 1.05
+    epochs:
+      - 1000
+    wrapper:
+      - training.engine.TrainingEngine
+    loss:
+      - training.callback.loss.GMDNLoss
+    scorer:
+      - class_name: training.callback.score.MultiScore
+        args:
+          # used at model selection time. Should be the one on which to perform early stopping
+          main_scorer: training.callback.score.LikelihoodScore
+          metric2: training.callback.score.MeanAverageErrorScore
+          metric3: training.callback.score.DirichletPriorScore
+
+    predictor:
+      - model.util.graph_expert_emission.GraphExpertEmission
+    output_type:
+      - gaussian # binomial # bernoulli # categorical # gaussian # poisson
+    expert_hidden_units:
+      - 32  # not used, linear model
+    neighborhood_aggregation:
+      - add
+    aggregation:  # global aggregation
+      - sum
+      - mean
+    optimizer:
+      - class_name: training.callback.optimizer.Optimizer
+        args:
+          optimizer_class_name: torch.optim.Adam
+          lr:
+             - 0.0001
+          weight_decay: 0.  # Useful to constrain magnitude of weights.
+          accumulate_gradients: True
+    early_stopper:
+      #- null
+      - class_name:
+          - training.callback.early_stopping.PatienceEarlyStopper
+        args:
+          patience:
+            - 100
+          #monitor: validation_R2 Determination Coefficient
+          monitor: validation_True Log Likelihood
+          mode: max
+          checkpoint: True
+    plotter:
+      - training.callback.plotter.Plotter
