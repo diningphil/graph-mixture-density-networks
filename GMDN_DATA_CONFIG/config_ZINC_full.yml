@@ -16,4 +16,4 @@ dataset:
   args:
     root: DATA
     name: ZINC_full
-    use_node_attr: False
+    use_node_attr: True
