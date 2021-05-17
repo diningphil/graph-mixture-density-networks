@@ -30,7 +30,7 @@ Remember that [PyTorch MacOS Binaries dont support CUDA, install from source if 
 
 ## Usage:
 
-This repo is based on [PyDGN](https://github.com/diningphil/PyDGN) v0.4.0. That repo contains a wiki that should introduce you to the basic functioning of this library. Please consider reading it before trying to run any experiment. In case, feel free to reach out to `federico.errica@phd.unipi.it` or `federico.errica@protonmail.com` to get assistance.
+This repo is based on [PyDGN](https://github.com/diningphil/PyDGN) v0.4.0. That repo contains a wiki that should introduce you to the basic functioning of this library. Please consider reading it before trying to run any experiment. In case, feel free to reach out to `federico.errica@phd.unipi.it` or `f.errica@protonmail.com` to get assistance.
 
 ### Preprocess your dataset
 Use
