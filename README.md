@@ -9,7 +9,7 @@ The library includes data and scripts to reproduce the experiments reported in t
 [*Federico Errica , Davide Bacciu, Alessio Micheli: Graph Mixture Density Networks. Proceedings of the 38th International Conference on Machine Learning (ICML), PMLR 139, 2021.*](https://arxiv.org/abs/2012.03085)
 
 ## Data and Splits
-To keep the memory footprint low, we do not provide the raw results of the simulations. We instead release the processed dataset, which contains the all the information used to run the simulations and the final results (target labels). However, through the notebooks in `GMDN_NOTEBOOKS`, it is possible to perform random simulations of the stochastic SIR model to create datasets of varying dimensions. This repo also provides Pytorch Geometric classes for all datasets
+To keep the memory footprint low, we do not provide the raw results of the simulations. We instead release the processed dataset, which contains all the information used to run the simulations and the final results (target labels). However, through the notebooks in `GMDN_NOTEBOOKS`, it is possible to perform random simulations of the stochastic SIR model to create datasets of varying dimensions. This repo also provides Pytorch Geometric classes for all datasets
 so that a user can easily load the data in memory and then convert it in some other form of interest.
 
 The splits used in our experiments are available in the `GMDN_SPLITS` folder. These are simple dictionaries that can be loaded using Pytorch.
