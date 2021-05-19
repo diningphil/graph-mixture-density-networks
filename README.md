@@ -2,7 +2,7 @@
 ![](https://github.com/diningphil/graph-mixture-density-networks/raw/main/images/gmdn.png)
 
 ## Summary
-The Graph Mixture Density Network is a supervised learning algorithm to model multimodal output distributions that are conditioned on arbitrary graphs.
+The Graph Mixture Density Network is a supervised learning framework to model multimodal output distributions that are conditioned on arbitrary graphs.
 
 The library includes data and scripts to reproduce the experiments reported in the paper. If you happen to use or modify this code, please remember to cite us:
 
