@@ -27,17 +27,11 @@ class GraphExpertEmission(torch.nn.Module):
         if 'binomial' in self.output_type:
             assert dim_target == 1, "Implementation works with a single dim regression problem for now"
             self.output_activation = Identity()  # emulate bernoulli
-            #self.node_transform = Sequential(Linear(dim_features, self.hidden_units * self.no_experts, bias=False), ReLU())
-            #self.final_transform = Linear(self.hidden_units * self.no_experts, self.no_experts, bias=False)
-            # Linear model
             self.node_transform = Identity()
             self.final_transform = Linear(dim_features, self.no_experts * 2, bias=False)
         elif 'bernoulli' in self.output_type:
             assert dim_target == 1, "Implementation works with a single dim regression problem for now"
             self.output_activation = Sigmoid()  # emulate bernoulli
-            #self.node_transform = Sequential(Linear(dim_features, self.hidden_units * self.no_experts, bias=False), ReLU())
-            #self.final_transform = Linear(self.hidden_units * self.no_experts, self.no_experts, bias=False)
-            # Linear model
             self.node_transform = Identity()
             self.final_transform = Linear(dim_features, self.no_experts, bias=False)
 
@@ -48,7 +42,6 @@ class GraphExpertEmission(torch.nn.Module):
             self.final_transform = Linear(self.hidden_units * self.no_experts * dim_target,
                                                    self.no_experts * dim_target, bias=False)
         elif 'gaussian' in self.output_type:
-            #assert dim_target == 1, "Implementation works with a single dim regression problem for now"
             self.output_activation = Identity()  # emulate gaussian (needs variance as well
             # Need independent parameters for the variance
             if self.hidden_units > 0:
@@ -60,32 +53,23 @@ class GraphExpertEmission(torch.nn.Module):
         elif 'poisson' in self.output_type:
             assert dim_target == 1, "Implementation works with a single dim regression problem for now"
             self.output_activation = Identity()
-            # Need independent parameters for the variance
-            #self.node_transform = Sequential(Linear(dim_features, self.hidden_units * self.no_experts, bias=False),
-            #                                 ReLU())
             self.node_transform = Identity()
             self.final_transform = Linear(dim_features, self.no_experts, bias=False)
-            #self.final_transform = Sequential(Linear(dim_features, self.hidden_units, bias=False), SELU(),
-            #                                  Linear(self.hidden_units, self.no_experts, bias=False))
         else:
             raise NotImplementedError(f'Activation {self.output_type} unrecognized, use bernoulli, categorical, gaussian, poisson.')
 
     def get_distribution_parameters(self, node_embeddings, batch):
 
         if self.aggregate is not None:
-
             graph_embeddings = self.aggregate(self.node_transform(node_embeddings), batch)
-
             out = self.output_activation(self.final_transform(graph_embeddings))
         else:
             out = self.output_activation(self.final_transform(self.node_transform(node_embeddings)))
 
         if 'binomial' in self.output_type:
             params = torch.reshape(out, [-1, self.no_experts, 2])  # ? x no_experts x K
-            # n not used
-            n, p = torch.round(torch.relu(params[:, :, 0])) + 1, torch.sigmoid(params[:, :, 1])
-
-            # TODO for now substitute n
+            # first parameter not used here
+            _, p = torch.round(torch.relu(params[:, :, 0])) + 1, torch.sigmoid(params[:, :, 1])
             n = global_add_pool(torch.ones(node_embeddings.shape[0], self.no_experts).to(node_embeddings.device), batch)
 
             distr_params = (n, p)
@@ -140,7 +124,6 @@ class GraphExpertEmission(torch.nn.Module):
             emission_of_true_labels = pmm.component_distribution.log_prob(x.float()).exp() + eps # [samples, experts]
 
         elif 'bernoulli' in self.output_type:
-
             # Construct a batch of "samples" Bernoulli Mixture Models (one for each data point) in 1D each
             # consisting of "self.no_experts" random weighted bivariate normal distributions
 
@@ -160,16 +143,9 @@ class GraphExpertEmission(torch.nn.Module):
             x = bmm._pad(labels)
 
             emission_of_true_labels = bmm.component_distribution.log_prob(x.float())  # [samples, experts]
-
-            # assert not (x < 0.).any()
-            # assert not torch.isnan(emission_of_true_labels).any()
-
             emission_of_true_labels = emission_of_true_labels.exp()
 
         elif 'categorical' in self.output_type:
-            #print(labels.shape, labels_squeezed.shape)
-            #print("QUITTING TO DEBUG IN MoGE Emission")
-            #exit(0)
             labels_squeezed = labels_squeezed.argmax(dim=1)
             emission_of_labels = distr_params[:, :, labels_squeezed]  # ?xC
         elif 'gaussian' in self.output_type:
@@ -178,9 +154,6 @@ class GraphExpertEmission(torch.nn.Module):
             mix = Categorical(p_Q_given_x)
             comp = Independent(Normal(loc=mu, scale=var), 1)  # mu/var have shape [samples, experts, features]
             gmm = MixtureSameFamily(mix, comp)
-
-            # print([mix.batch_shape, mix.event_shape])
-            # print([comp.batch_shape, comp.event_shape])
 
             # labels has shape [samples, features]
             x = gmm._pad(labels)

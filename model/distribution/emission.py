@@ -82,12 +82,6 @@ class Categorical(EmissionDistribution):
         :param x_labels: unused
         :return:
         """
-        '''
-        # OLD CODE
-        # We simply compute P(y|x) = \sum_i P(y|Q=i)P(Q=i|x) for each node
-        inferred_y = torch.mm(p_Q, self.emission_distr.transpose(0, 1))  # ?xK
-        return inferred_y
-        '''
         p_K_CS = p_Q.unsqueeze(1) * self.emission_distr.unsqueeze(0)  # ?xKxC
         p_KCS = p_K_CS.reshape((-1, self.K*self.C))  # ?xKC
         best_KCS = torch.argmax(p_KCS, dim=1)
@@ -374,27 +368,10 @@ class IsotropicGaussian(EmissionDistribution):
         """
         diff = (labels.float() - mean)
 
-        '''
-        first_log_term = - torch.log(torch.sqrt(2 * self.pi * var))
-        second_log_term = - torch.mul(tmp, tmp)/(2*var)
-        probs = torch.exp(torch.sum(first_log_term + second_log_term, dim=1))
-        '''
-
-        '''
-        normaliser = torch.sqrt(2*self.pi*var).unsqueeze(0) # add batch dimension for broadcasting
-        num = torch.exp(- (diff * diff)/(0.5*var) )
-        probs = torch.prod(num / normaliser, dim=1)
-        '''
         log_normaliser = -0.5 * (torch.log(2 * self.pi) + torch.log(var))
         log_num = - (diff * diff) / (2 * var)
         log_probs = torch.sum(log_num + log_normaliser, dim=1)
         probs = torch.exp(log_probs)
-
-        '''
-        assert torch.allclose(torch.exp(log_num), num), (num, torch.exp(log_num))
-        assert torch.allclose(torch.exp(-log_normaliser), normaliser), (normaliser, torch.exp(-log_normaliser)) # minus because of the fraction
-        assert torch.allclose(torch.exp(log_probs), probs), (probs, torch.exp(log_probs))
-        '''
 
         # Trick to avoid instability, in case variance collapses to 0
         probs[probs != probs] = self.eps
