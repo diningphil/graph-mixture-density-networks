@@ -1,21 +1,20 @@
-# Graph Mixture Density Network (GMDN)
+# Graph Mixture Density Networks (GMDN)
 ![](https://github.com/diningphil/graph-mixture-density-networks/raw/main/images/gmdn.png)
 
 ## Summary
-The Graph Mixture Density network is a supervised learning algorithm to model multimodal output distributions that are conditioned on arbitrary graphs.
+The Graph Mixture Density Network is a supervised learning framework to model multimodal output distributions that are conditioned on arbitrary graphs.
 
 The library includes data and scripts to reproduce the experiments reported in the paper. If you happen to use or modify this code, please remember to cite us:
 
 [*Federico Errica , Davide Bacciu, Alessio Micheli: Graph Mixture Density Networks. Proceedings of the 38th International Conference on Machine Learning (ICML), PMLR 139, 2021.*](https://arxiv.org/abs/2012.03085)
 
 ## Data and Splits
-To keep the memory footprint low, we do not provide the raw results of the simulations. We instead release the processed dataset, which contains the all the information used to run the simulations and the final results (target labels). However, through the notebooks in `GMDN_NOTEBOOKS`, it is possible to perform random simulations of the stochastic SIR model to create datasets of varying dimensions. This repo also provides Pytorch Geometric classes for all datasets
+To keep the memory footprint low, we do not provide the raw results of the simulations. We instead release the processed dataset, which contains all the information used to run the simulations and the final results (target labels). However, through the notebooks in `GMDN_NOTEBOOKS`, it is possible to perform random simulations of the stochastic SIR model to create datasets of varying dimensions. This repo also provides Pytorch Geometric classes for all datasets
 so that a user can easily load the data in memory and then convert it in some other form of interest.
 
 The splits used in our experiments are available in the `GMDN_SPLITS` folder. These are simple dictionaries that can be loaded using Pytorch.
 
-Data for the Barabasi-Albert and Erdos-Renyi experiments can be downloaded at the following link: https://www.dropbox.com/sh/cv6blu0w3pqevxq/AAAJFC2wpLuDVfe75qAoD7hga?dl=0
-However, we are working to provide a more reliable link in the future.
+Data for the Barabasi-Albert and Erdos-Renyi experiments can be downloaded at [this link](https://www.dropbox.com/sh/cv6blu0w3pqevxq/AAAJFC2wpLuDVfe75qAoD7hga?dl=0). However, we are working to provide a more reliable link in the future.
 The file contains the datasets in highly compressed form, for a total of 3.7GB. Note: the fully uncompressed folder (all datasets) will take 155GB of space.
 
 ## Installation:
@@ -31,10 +30,11 @@ Remember that [PyTorch MacOS Binaries dont support CUDA, install from source if 
 
 ## Usage:
 
-This repo is based on [PyDGN](https://github.com/diningphil/PyDGN) v0.4.0. That repo contains a wiki that should introduce you to the basic functioning of this library. Please consider reading it before trying to run any experiment. In case, feel free to reach out to `federico.errica@phd.unipi.it` or `federico.errica@protonmail.com` to get assistance.
+This repo is based on [PyDGN](https://github.com/diningphil/PyDGN) v0.4.0. That repo contains a wiki that should introduce you to the basic functioning of this library. Please consider reading it before trying to run any experiment. In case, feel free to reach out to `federico.errica@phd.unipi.it` or `f.errica@protonmail.com` to get assistance.
 
 ### Preprocess your dataset
 Use
+
     python build_dataset.py --config-file [your data config file]
 
 For example
@@ -43,6 +43,7 @@ For example
 
 ### Launch an experiment in debug mode
 Use
+      
     python launch_experiment.py --config-file [your exp. config file] --splits-folder [the splits MAIN folder] --data-splits [the splits file] --data-root [root folder of your data] --dataset-name [name of the dataset] --dataset-class [class that handles the dataset] --max-cpus [max cpu parallelism] --max-gpus [max gpu parallelism] --gpus-per-task [how many gpus to allocate for each job] --final-training-runs [how many final runs when evaluating on test. Results are averaged] --result-folder [folder where to store results]
 
 For example (uses GPU - to use CPU only, modify the config file accordingly and set `--max-gpus 0`)
