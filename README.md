@@ -6,7 +6,7 @@ The Graph Mixture Density Network is a supervised learning framework to model mu
 
 The library includes data and scripts to reproduce the experiments reported in the paper. If you happen to use or modify this code, please remember to cite us:
 
-[*Federico Errica , Davide Bacciu, Alessio Micheli: Graph Mixture Density Networks. Proceedings of the 38th International Conference on Machine Learning (ICML), PMLR 139, 2021.*](https://arxiv.org/abs/2012.03085)
+[*Federico Errica , Davide Bacciu, Alessio Micheli: Graph Mixture Density Networks. Proceedings of the 38th International Conference on Machine Learning (ICML), PMLR 139:3025-3035, 2021.*](https://arxiv.org/abs/2012.03085)
 
 ## Data and Splits
 To keep the memory footprint low, we do not provide the raw results of the simulations. We instead release the processed dataset, which contains all the information used to run the simulations and the final results (target labels). However, through the notebooks in `GMDN_NOTEBOOKS`, it is possible to perform random simulations of the stochastic SIR model to create datasets of varying dimensions. This repo also provides Pytorch Geometric classes for all datasets
