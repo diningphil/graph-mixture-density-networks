@@ -20,6 +20,7 @@ The file contains the datasets in highly compressed form, for a total of 3.7GB. 
 ## Requirements
 
 - [PyDGN](https://github.com/diningphil/PyDGN)  (we used PyDGN 0.5.2)
+- [DGL](https://www.dgl.ai) 0.4.0
 
 ### Preprocess your dataset
 Use
@@ -32,7 +33,7 @@ For example
 
 ### Launch an experiment in debug mode
 Use
-      
+
     python launch_experiment.py --config-file [your exp. config file] --splits-folder [the splits MAIN folder] --data-splits [the splits file] --data-root [root folder of your data] --dataset-name [name of the dataset] --dataset-class [class that handles the dataset] --max-cpus [max cpu parallelism] --max-gpus [max gpu parallelism] --gpus-per-task [how many gpus to allocate for each job] --final-training-runs [how many final runs when evaluating on test. Results are averaged] --result-folder [folder where to store results]
 
 For example (uses GPU - to use CPU only, modify the config file accordingly and set `--max-gpus 0`)
