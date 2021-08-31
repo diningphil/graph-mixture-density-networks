@@ -1,11 +1,12 @@
-model: model.dgn.gmdn.GMDN
-experiment: experiment.supervised_task.SupervisedTask
+model: gmdn.GMDN
+experiment: pydgn.experiment.supervised_task.SupervisedTask
 log_every: 5
 higher_results_are_better: True
-dataset-getter: data.provider.DataProvider
+dataset_getter: pydgn.data.provider.DataProvider
 device: cuda
 num_dataloader_workers: 4
 pin_memory: True
+seed: 42
 grid:
   supervised_config:
     batch_size:
@@ -27,19 +28,18 @@ grid:
     epochs:
       - 1000
     wrapper:
-      - training.engine.TrainingEngine
+      - pydgn.training.engine.TrainingEngine
     loss:
-      - training.callback.loss.GMDNLoss
+      - gmdn_loss.GMDNLoss
     scorer:
-      - class_name: training.callback.score.MultiScore
+      - class_name: pydgn.training.callback.score.MultiScore
         args:
           # used at model selection time. Should be the one on which to perform early stopping
-          main_scorer: training.callback.score.LikelihoodScore
-          metric2: training.callback.score.MeanAverageErrorScore
-          metric3: training.callback.score.DirichletPriorScore
-
+          main_scorer: gmdn_score.LikelihoodScore
+          metric2: pydgn.training.callback.score.MeanAverageErrorScore
+          metric3: gmdn_score.DirichletPriorScore
     predictor:
-      - model.util.graph_expert_emission.GraphExpertEmission
+      - gmdn_emission.GraphExpertEmission
     output_type:
       - gaussian # binomial # bernoulli # categorical # gaussian # poisson
     expert_hidden_units:
@@ -50,7 +50,7 @@ grid:
       - sum
       - mean
     optimizer:
-      - class_name: training.callback.optimizer.Optimizer
+      - class_name: pydgn.training.callback.optimizer.Optimizer
         args:
           optimizer_class_name: torch.optim.Adam
           lr:
@@ -60,7 +60,7 @@ grid:
     early_stopper:
       #- null
       - class_name:
-          - training.callback.early_stopping.PatienceEarlyStopper
+          - pydgn.training.callback.early_stopping.PatienceEarlyStopper
         args:
           patience:
             - 100
@@ -69,4 +69,4 @@ grid:
           mode: max
           checkpoint: True
     plotter:
-      - training.callback.plotter.Plotter
+      - pydgn.training.callback.plotter.Plotter

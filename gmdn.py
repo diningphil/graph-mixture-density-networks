@@ -1,12 +1,10 @@
 import torch
 from torch_geometric.nn import global_mean_pool, global_max_pool, global_add_pool
-from torch.nn import Linear, Sigmoid, Tanh, ReLU, SELU, Sequential
-from torch.nn import BatchNorm1d
+from torch.nn import Linear, ReLU, Sequential
 
 from torch_geometric.nn import GCNConv
-from model.dgn.convs.gmdn_conv import GMDNConv
-from model.util.graph_expert_emission import GraphExpertEmission
-from model.util.util import multivariate_diagonal_pdf
+
+from gmdn_conv import GMDNConv
 
 
 class GMDN(torch.nn.Module):

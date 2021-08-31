@@ -1,23 +1,15 @@
 import os
 import sys
 import json
-import shutil
-import torch
 import os.path as osp
 from pathlib import Path
-import numpy as np
 import pandas as pd
-import scipy.io
-import matplotlib.pyplot as plt
-import seaborn as sns
-import networkx as nx
 import torch
-import scipy.io
-from torch_geometric.data import Dataset
-from torch_geometric.data import InMemoryDataset, Data, download_url, extract_zip
-from torch_geometric.utils import from_networkx, remove_self_loops
+from pydgn.data.dataset import DatasetInterface
+from torch_geometric.data import InMemoryDataset
+from torch_geometric.utils import from_networkx
 from torch_geometric.datasets import TUDataset
-from torch_geometric.io import read_tu_data
+
 stderr_tmp = sys.stderr
 null = open(os.devnull, 'w')
 sys.stderr = null
@@ -25,30 +17,24 @@ from dgl.data.utils import load_graphs
 sys.stderr = stderr_tmp
 
 
-class DatasetInterface:
-
-    name = None
-
-    @property
-    def dim_node_features(self):
-        raise NotImplementedError("You should subclass DatasetInterface and implement this method")
-
-    @property
-    def dim_edge_features(self):
-        raise NotImplementedError("You should subclass DatasetInterface and implement this method")
-
-
+# Overwrites the class of PyDGN to account for the extra processing of the datasets under consideration
 class TUDatasetInterface(TUDataset, DatasetInterface):
 
     def __init__(self, root, name, transform=None, pre_transform=None, pre_filter=None, use_node_attr=False, use_edge_attr=False, cleaned=False):
         super().__init__(root, name, transform, pre_transform, pre_filter, use_node_attr, use_edge_attr, cleaned)
 
-        if 'alchemy_full' in self.name:
+        if 'aspirin' in self.name:
+            # For regression problems
+            if len(self.data.y.shape) == 1:
+                self.data.y = self.data.y.unsqueeze(1)
+            self.data.y = self.data.y / 100000.
+
+        if 'alchemy_full' in self.name or 'QM9' in self.name:
             # For regression problems
             if len(self.data.y.shape) == 1:
                 self.data.y = self.data.y.unsqueeze(1)
 
-            # Normalize all target variables (for training stability purposes)
+            # Normalize all target variables (just for stability purposes)
             mean = self.data.y.mean(0).unsqueeze(0)
             std = self.data.y.std(0).unsqueeze(0)
             self.data.y = (self.data.y - mean) / std

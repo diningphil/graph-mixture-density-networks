@@ -1,13 +1,13 @@
 splitter:
   root: GMDN_SPLITS/
-  class_name: data.splitter.SIRSplitter
+  class_name: gmdn_splitter.SIRSplitter
   args:
     n_outer_folds: 1
     n_inner_folds: 1
     seed: 42
 dataset:
   root: DATA/BARABASI_ALBERT
-  class_name: data.dataset.BarabasiAlbertDataset
+  class_name: gmdn_dataset.BarabasiAlbertDataset
   args:
     root: DATA/BARABASI_ALBERT
     name: barabasi_albert
