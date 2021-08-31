@@ -19,7 +19,6 @@ The file contains the datasets in highly compressed form, for a total of 3.7GB. 
 
 ## Requirements
 
-- [Git LFS](https://git-lfs.github.com) to fetch the compressed dataset to be processed
 - [PyDGN](https://github.com/diningphil/PyDGN)  (we used PyDGN 0.5.2)
 
 ### Preprocess your dataset
