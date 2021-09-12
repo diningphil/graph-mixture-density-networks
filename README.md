@@ -19,7 +19,7 @@ The file contains the datasets in highly compressed form, for a total of 3.7GB. 
 
 ## Requirements
 
-- [PyDGN](https://github.com/diningphil/PyDGN)  (we used PyDGN 0.5.2)
+- [PyDGN](https://github.com/diningphil/PyDGN)  (we used PyDGN 0.5.1)
 - [DGL](https://www.dgl.ai) 0.4.0
 
 ### Preprocess your dataset

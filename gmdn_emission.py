@@ -145,9 +145,6 @@ class GraphExpertEmission(torch.nn.Module):
             emission_of_true_labels = bmm.component_distribution.log_prob(x.float())  # [samples, experts]
             emission_of_true_labels = emission_of_true_labels.exp()
 
-        elif 'categorical' in self.output_type:
-            labels_squeezed = labels_squeezed.argmax(dim=1)
-            emission_of_labels = distr_params[:, :, labels_squeezed]  # ?xC
         elif 'gaussian' in self.output_type:
             mu, var = distr_params
 
@@ -196,16 +193,10 @@ class GraphExpertEmission(torch.nn.Module):
             bernoulli_params = distr_params
             tmp = torch.mul(p_Q, bernoulli_params)  # (? x no_experts)
             inferred_y = tmp.sum(1, keepdim=True)  # ? x 1
-        elif 'categorical' in self.output_type:
-            emission_distr = distr_params
-            assert not (emission_distr == 0).any()
-            tmp = torch.mul(p_Q.unsqueeze(2), emission_distr)  # (? x no_experts x K)
-            inferred_y = torch.sum(tmp, dim=1)  # ? x K
         elif 'gaussian' in self.output_type:
             mu, var = distr_params
             tmp = torch.mul(p_Q.unsqueeze(2), mu)  # (? x no_experts, F)
             inferred_y = torch.sum(tmp, dim=1)  # ? x F
-
         elif 'poisson' in self.output_type:
             # F is assumed to be 1 for now
             lambda_poisson = distr_params
