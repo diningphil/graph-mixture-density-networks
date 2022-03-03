@@ -1,13 +1,40 @@
 import torch
-from torch_geometric.nn import global_mean_pool, global_max_pool, global_add_pool
+from pydgn.model.interface import ModelInterface
+from torch_geometric.nn import global_mean_pool, global_max_pool, global_add_pool, MessagePassing
 from torch.nn import Linear, ReLU, Sequential
-
-from torch_geometric.nn import GCNConv
-
-from gmdn_conv import GMDNConv
+from torch_geometric.nn.inits import reset
 
 
-class GMDN(torch.nn.Module):
+class GMDNConv(MessagePassing):
+    """
+    Inspired by the GINConv
+    """
+    def __init__(self, nn, eps=0, aggr='add', dim_edge_features=None, **kwargs):
+        super(GMDNConv, self).__init__(aggr=aggr, **kwargs)
+        self.nn = nn
+        self.initial_eps = eps
+        self.eps = torch.nn.Parameter(torch.Tensor([eps]))
+
+        self.dim_edge_features = dim_edge_features
+        if dim_edge_features is not None:
+            self.edge_lin = Linear(dim_edge_features, 1)
+
+    def reset_parameters(self):
+        reset(self.nn)
+        self.eps.data.fill_(self.initial_eps)
+
+    def forward(self, x, edge_index, edge_attr):
+        out = self.nn((1. + self.eps) * x + self.propagate(edge_index, x=x, edge_attr=edge_attr))
+        return out
+
+    def message(self, x_j, edge_attr):
+        if self.dim_edge_features is not None:
+            return x_j if edge_attr is None else x_j*self.edge_lin(edge_attr)
+        else:
+            return x_j
+
+
+class GMDN(ModelInterface):
     '''
     Graph Mixture Density Network. The "predictor_class" implements is all our experts (with different parametrization)
     '''
@@ -64,9 +91,6 @@ class GMDN(torch.nn.Module):
 
         # Detach as they are not used to back-propagate any gradient
         likely_labels, posterior_batch = likely_labels.detach(), posterior_batch.detach()
-
-        # TODO Refactor: Use this when training DGN on MAE Loss for debug
-        #posterior_batch = posterior_batch.detach()
 
         prior_term = prior_term.detach()
 
@@ -198,79 +222,3 @@ class GMDNEncoder(torch.nn.Module):
 
     def m_step(self):
         pass  # all done by optimizer
-
-
-### Use this for link prediction (uses GCNConv to fairly compare with known methods)
-
-class GMDNLinkPrediction(GMDN):
-
-    def _set_layer(self, emission, config):
-        self.layer = GMDNLinkPredictionEncoder(self.dim_node_features, self.dim_edge_features, self.no_experts, emission, config)
-
-    def __init__(self, dim_node_features, dim_edge_features, dim_target, predictor_class, config):
-        super().__init__(dim_node_features, dim_edge_features, dim_target, predictor_class, config)
-        self.no_layers = config['num_convolutional_layers']
-        self.hidden_units = config['hidden_units']
-        dim_experts_input = self.hidden_units
-        emission = predictor_class(dim_experts_input, self.no_experts, dim_target, config)
-        self._set_layer(emission, config)
-
-    def e_step(self, data):
-        weights, params, node_embeddings, emission_weight, prior_term = self.layer.e_step(data)
-        return weights, (weights, *params, node_embeddings, emission_weight, prior_term)
-
-
-class GMDNLinkPredictionTransition(torch.nn.Module):
-
-    def __init__(self, dim_node_features, dim_edge_features, dim_target, config):
-        super().__init__()
-
-        self.dim_node_features = dim_node_features
-        self.dim_edge_features = dim_edge_features
-        self.dim_target = dim_target
-
-        num_layers = config['num_convolutional_layers']
-        hidden_units = config['hidden_units']
-
-        self.layers = torch.nn.ModuleList([])
-
-        for i in range(num_layers):
-            dim_input = dim_node_features if i == 0 else hidden_units
-            l = GCNConv(dim_input, hidden_units)
-            self.layers.append(l)
-
-        self.out = Linear(hidden_units, dim_target)
-
-    def forward(self, x, edge_index, edge_attr, batch):
-
-        # Same as in GCN.py
-        for i, layer in enumerate(self.layers):
-            x = layer(x, edge_index)
-            if i < len(self.layers)-1:
-                x = torch.relu(x)
-
-        ## Exp-normalize trick: subtract the maximum value
-        out = self.out(x)
-        max_vals, _ = torch.max(out, dim=-1, keepdim=True)
-        out_minus_max = out - max_vals
-        p_Q_given_x = torch.nn.functional.softmax(out_minus_max, dim=-1).clamp(1e-8, 1.)
-        return p_Q_given_x, x
-
-
-class GMDNLinkPredictionEncoder(GMDNEncoder):
-
-    def __init__(self, dim_node_features, dim_edge_features, no_experts, emission, config):
-        super().__init__(dim_node_features, dim_edge_features, no_experts, emission, config)
-        self.transition = GMDNLinkPredictionTransition(dim_node_features, dim_edge_features, no_experts, config)  # neural convolution
-
-    def e_step(self, data):
-        labels, graphs, edge_index, edge_attr, batch, = \
-                                data.y, data.x, data.edge_index, data.edge_attr, data.batch
-
-        p_Q_given_x, node_embeddings = self.transition(graphs, edge_index, edge_attr, batch)
-        distr_params = self.emission.get_distribution_parameters(node_embeddings, batch)
-        emission_weight = self.emission.final_transform.weight
-
-        prior_term = torch.mean(self.dirichlet.log_prob(p_Q_given_x), dim=0)
-
-        return p_Q_given_x, distr_params, node_embeddings, emission_weight, prior_term

@@ -29,18 +29,6 @@ class GraphExpertEmission(torch.nn.Module):
             self.output_activation = Identity()  # emulate bernoulli
             self.node_transform = Identity()
             self.final_transform = Linear(dim_features, self.no_experts * 2, bias=False)
-        elif 'bernoulli' in self.output_type:
-            assert dim_target == 1, "Implementation works with a single dim regression problem for now"
-            self.output_activation = Sigmoid()  # emulate bernoulli
-            self.node_transform = Identity()
-            self.final_transform = Linear(dim_features, self.no_experts, bias=False)
-
-        elif 'categorical' in self.output_type:
-            self.output_activation = Softmax(dim=1)  # emulate categorical
-            self.node_transform = Sequential(Linear(dim_features, self.hidden_units * self.no_experts), ReLU(),
-                                            Linear(self.hidden_units * self.no_experts, self.hidden_units * self.no_experts * dim_target), ReLU())
-            self.final_transform = Linear(self.hidden_units * self.no_experts * dim_target,
-                                                   self.no_experts * dim_target, bias=False)
         elif 'gaussian' in self.output_type:
             self.output_activation = Identity()  # emulate gaussian (needs variance as well
             # Need independent parameters for the variance
@@ -50,11 +38,6 @@ class GraphExpertEmission(torch.nn.Module):
             else:
                 self.node_transform = Identity()
                 self.final_transform = Linear(dim_features, self.no_experts * 2 * dim_target)
-        elif 'poisson' in self.output_type:
-            assert dim_target == 1, "Implementation works with a single dim regression problem for now"
-            self.output_activation = Identity()
-            self.node_transform = Identity()
-            self.final_transform = Linear(dim_features, self.no_experts, bias=False)
         else:
             raise NotImplementedError(f'Activation {self.output_type} unrecognized, use bernoulli, categorical, gaussian, poisson.')
 
@@ -73,11 +56,6 @@ class GraphExpertEmission(torch.nn.Module):
             n = global_add_pool(torch.ones(node_embeddings.shape[0], self.no_experts).to(node_embeddings.device), batch)
 
             distr_params = (n, p)
-        if 'bernoulli' in self.output_type:
-            distr_params = torch.reshape(out, [-1, self.no_experts])  # ? x no_experts
-        elif 'categorical' in self.output_type:
-            distr_params = torch.reshape(out, [-1, self.no_experts, self.dim_target])  # ? x no_experts x K
-            assert not (distr_params == 0).any()
         elif 'gaussian' in self.output_type:
             # Assume isotropic gaussians
             params = torch.reshape(out, [-1, self.no_experts, 2, self.dim_target])  # ? x no_experts x 2 x F
@@ -189,17 +167,8 @@ class GraphExpertEmission(torch.nn.Module):
             mean = n*p
             tmp = torch.mul(p_Q, mean)  # (? x no_experts)
             inferred_y = tmp.sum(1, keepdim=True)  # ? x 1
-        elif 'bernoulli' in self.output_type:
-            bernoulli_params = distr_params
-            tmp = torch.mul(p_Q, bernoulli_params)  # (? x no_experts)
-            inferred_y = tmp.sum(1, keepdim=True)  # ? x 1
         elif 'gaussian' in self.output_type:
             mu, var = distr_params
             tmp = torch.mul(p_Q.unsqueeze(2), mu)  # (? x no_experts, F)
             inferred_y = torch.sum(tmp, dim=1)  # ? x F
-        elif 'poisson' in self.output_type:
-            # F is assumed to be 1 for now
-            lambda_poisson = distr_params
-            tmp = torch.mul(p_Q, lambda_poisson)  # (? x no_experts)
-            inferred_y = torch.sum(tmp, dim=1, keepdim=True)  # ? x 1
         return inferred_y  # avoid recomputing params
