@@ -1,25 +1,54 @@
-model: gmdn.GMDN
-experiment: pydgn.experiment.supervised_task.SupervisedTask
-log_every: 5
-higher_results_are_better: True
+# Dataset and Splits
+data_root: DATA
+dataset_class: gmdn_dataset.AlchemyZINCDatasetInterface
+dataset_name:  alchemy_full
+data_splits_file:  DATA_SPLITS/alchemy_full/alchemy_full_outer1_inner1.splits
+
+
+# Hardware
+device:  cuda
+max_cpus:  8
+max_gpus: 1
+gpus_per_task:  1
+
+
+# Data Loading
 dataset_getter: pydgn.data.provider.DataProvider
-device: cuda
-num_dataloader_workers: 4
-pin_memory: True
+data_loader:
+  class_name: torch_geometric.loader.DataLoader
+  args:
+    num_workers : 4
+    pin_memory: True
+
+
+# Reproducibility
 seed: 42
+
+
+# Experiment
+result_folder: RESULTS
+exp_name: gmdn_exp
+experiment: pydgn.experiment.supervised_task.SupervisedTask
+higher_results_are_better: True
+evaluate_every: 1
+final_training_runs: 3
+
 grid:
   supervised_config:
-    batch_size:
-      - 8192
-    shuffle:
-      - True
+    model: gmdn.GMDN
+    checkpoint: True
+    shuffle: True
+    batch_size: 8192
+    epochs: 2500
+
+    # Model specific arguments #
+
     number_of_experts:
-      - 5
       - 3
-      - 2
+      - 5
+    expert_hidden_units: 0
     hidden_units:
       - 64
-      - 256
     num_convolutional_layers:
       - 2
       - 5
@@ -27,30 +56,30 @@ grid:
     dirichlet_alpha:
       - 1.0
       - 1.05
-    epochs:
-      - 1000
-    wrapper:
-      - pydgn.training.engine.TrainingEngine
-    loss:
-      - gmdn_loss.GMDNLoss
-    scorer:
-      - class_name: pydgn.training.callback.score.MultiScore
-        args:
-          # used at model selection time. Should be the one on which to perform early stopping
-          main_scorer: gmdn_score.LikelihoodScore
-          metric2: pydgn.training.callback.score.MeanAverageErrorScore
-          metric3: gmdn_score.DirichletPriorScore
-    predictor:
-      - gmdn_emission.GraphExpertEmission
-    output_type:
-      - gaussian # binomial # bernoulli # categorical # gaussian # poisson
-    expert_hidden_units:
-      - 32  # not used, linear model
-    neighborhood_aggregation:
-      - add
+    neighborhood_aggregation: add
+    output_type: gaussian
     aggregation:  # global aggregation
       - sum
       - mean
+
+    # ------------------------ #
+
+    engine:
+      - pydgn.training.engine.TrainingEngine
+
+    loss:
+      - gmdn_loss.GMDNLoss
+
+    scorer:
+      - class_name: pydgn.training.callback.metric.MultiScore
+        args:
+          # used at model selection time. Should be the one on which to perform early stopping
+          main_scorer: gmdn_score.LogLikelihoodScore
+          metric2: gmdn_score.DirichletPriorScore
+          metric3: gmdn_score.MeanAverageError
+
+    readout: gmdn_emission.GraphExpertEmission
+
     optimizer:
       - class_name: pydgn.training.callback.optimizer.Optimizer
         args:
@@ -58,17 +87,16 @@ grid:
           lr:
              - 0.0001
           weight_decay: 0.  # Useful to constrain magnitude of weights.
-          accumulate_gradients: True
+          accumulate_gradients: True  # to implement G-EM
+
     early_stopper:
-      #- null
       - class_name:
           - pydgn.training.callback.early_stopping.PatienceEarlyStopper
         args:
           patience:
-            - 100
-          #monitor: validation_R2 Determination Coefficient
-          monitor: validation_True Log Likelihood
+            - 30
+          monitor: validation_Log Likelihood
           mode: max
           checkpoint: True
-    plotter:
-      - pydgn.training.callback.plotter.Plotter
+
+    plotter: pydgn.training.callback.plotter.Plotter

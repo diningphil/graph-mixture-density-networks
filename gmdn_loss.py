@@ -9,7 +9,7 @@ class GMDNLoss(Metric):
 
     # Simply ignore targets
     def forward(self, targets, *outputs):
-        likelihood = outputs[2]
+        likelihood = outputs[2][0]
         return likelihood
 
     def on_backward(self, state):

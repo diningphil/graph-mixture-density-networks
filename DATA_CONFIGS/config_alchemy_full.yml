@@ -12,10 +12,8 @@ splitter:
     test_ratio: 0.1
 dataset:
   root: DATA/
-  class_name: pydgn.data.dataset.TUDatasetInterface
+  class_name: gmdn_dataset.AlchemyZINCDatasetInterface
   args:
     root: DATA
     name: alchemy_full
     use_node_attr: True
-  transform:
-    - class_name: transform.AlchemyFullPreprocess
