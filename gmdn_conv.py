@@ -31,3 +31,4 @@ class GMDNConv(MessagePassing):
             return x_j if edge_attr is None else x_j*self.edge_lin(edge_attr)
         else:
             return x_j
+
