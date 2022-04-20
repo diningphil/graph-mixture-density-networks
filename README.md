@@ -13,7 +13,7 @@ If you happen to use or modify this code, please remember to cite us:
 This repo builds upon [PyDGN](https://github.com/diningphil/PyDGN), a framework to easily develop and test new DGNs.
 See how to construct your dataset and then train your model there.
 
-This repo assumes PyDGN 1.0.3 is used. Compatibility with future versions is not guaranteed.
+This repo assumes PyDGN 1.0.5 is used. Compatibility with future versions is not guaranteed.
 
 #### Example on `alchemy_full`
 
